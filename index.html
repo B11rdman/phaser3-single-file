@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JS and Game Dev</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      const { innerWidth, innerHeight } = window;
+      let moon = null;
+      let logo = null;
+
+      const config = {
+        type: Phaser.AUTO,
+        width: innerWidth,
+        height: innerHeight,
+        backgroundColor: "#000269",
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 500 },
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      const game = new Phaser.Game(config);
+
+      function preload() {
+        this.load.image("logo", "./assets/js-conf-logo.png");
+        this.load.image("red", "./assets/particle.png");
+        this.load.image("moon", "./assets/moon.png");
+        this.load.image("star", "./assets/star.png");
+      }
+
+      function create() {
+        const num = 10;
+
+        for (let i = 0; i < num; i++) {
+          for (let j = 0; j < num; j++) {
+            const star = this.add.image(0, 0, "star");
+            const x = (i * config.width) / num + star.width / 1.5;
+            const y = (j * config.height) / num + star.height / 1.5;
+            star.setPosition(x, y);
+          }
+        }
+
+        moon = this.add.image(config.width / 2, config.height / 2, "moon");
+        moon.setScale(0.75);
+
+        moon.setInteractive(
+          new Phaser.Geom.Circle(moon.width / 2, moon.height / 2, moon.width / 2),
+          Phaser.Geom.Circle.Contains
+        );
+
+        moon.on("pointerdown", () => {
+          moon.setScale(1);
+          moon.setTint(0xff0000);
+        });
+
+        moon.on("pointerup", () => {
+          moon.setScale(0.75);
+          moon.clearTint();
+        });
+
+        const particles = this.add.particles("red");
+
+        const emitter = particles.createEmitter({
+          speed: 100,
+          scale: { start: 1, end: 0 },
+          alpha: { start: 1, end: 0 },
+          blendMode: "ADD",
+        });
+
+        logo = this.physics.add.image(100, 100, "logo");
+        logo.setScale(0.25);
+        logo.setVelocity(200, 200);
+        logo.setBounce(1, 1);
+        logo.setCollideWorldBounds(true);
+
+        emitter.startFollow(logo);
+      }
+
+      function update() {
+        moon.angle += 0.5;
+        logo.angle += 5;
+      }
+    </script>
+  </body>
+</html>
